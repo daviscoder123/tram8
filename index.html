@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tram 8 · Masarova</title>
+<meta name="description" content="Za kolik minut jede tramvaj 8 z Masarovy směr centrum.">
+
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#e2001a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tram 8">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" href="./icons/icon-192.png">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+<!-- Hlavička (označník zastávky) -->
+<header class="header">
+  <div class="line-badge">8</div>
+  <div class="header-text">
+    <h1>Masarova</h1>
+    <p>směr centrum · Hlavní nádraží → Nemocnice Bohunice</p>
+  </div>
+</header>
+
+<main>
+  <!-- Stav datového zdroje -->
+  <div class="status" id="status-line">
+    <span class="status-dot" id="status-dot"></span>
+    <span id="status-text">Načítám živá data…</span>
+  </div>
+
+  <!-- Velká tabule -->
+  <section class="board">
+    <div class="board-label">Tramvaj přijede za</div>
+    <div class="big-number" id="big-number">–</div>
+    <div class="board-label" id="big-unit">min</div>
+    <div class="depart-line" id="depart-line"></div>
+    <div class="live-note" id="live-note"></div>
+  </section>
+
+  <!-- Další odjezdy -->
+  <section class="next">
+    <h2>Další odjezdy</h2>
+    <div id="next-list"></div>
+  </section>
+</main>
+
+<!-- Patka -->
+<footer class="footer">
+  <p class="footer-strong">Jízdní řád: <span id="service-day"></span></p>
+  <p>Živá data: polohy a zpoždění vozidel IDS JMK (KORDIS, mapa.idsjmk.cz), obnova každých 10 s, jen když je aplikace na obrazovce. Základ: jízdní řád DPMB linky 8 platný od 27. 6. 2026, Masarova = Mifkova + 3 min.</p>
+</footer>
+
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>
