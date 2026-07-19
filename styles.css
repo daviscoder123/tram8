@@ -1,0 +1,229 @@
+/* styles.css — paleta a rozměry převzaté z DepartureBoardView.swift */
+
+:root {
+  --board:      #101418;
+  --board-edge: #1c2329;
+  --led:        #ffb300;
+  --led-dim:    #7a5a10;
+  --led-mid:    #c99a2e;
+  --dpmb-red:   #e2001a;
+  --paper:      #f2f0ea;
+  --ink:        #22262b;
+  --muted:      #8b939c;
+  --live:       #2fbf71;
+  --late:       #c4342b;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html { background: var(--dpmb-red); }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+main { flex: 1 0 auto; }
+
+/* --- Hlavička --------------------------------------------------------- */
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  padding-top: calc(14px + env(safe-area-inset-top));
+  background: var(--dpmb-red);
+  color: #fff;
+}
+
+.line-badge {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  color: var(--dpmb-red);
+  border-radius: 10px;
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.header-text h1 {
+  margin: 0 0 3px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.header-text p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.92;
+  line-height: 1.35;
+}
+
+/* --- Stav zdroje ------------------------------------------------------ */
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.status.is-live { color: var(--live); }
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex: none;
+}
+
+.status-dot.is-live {
+  background: var(--live);
+  box-shadow: 0 0 0 3px rgba(47, 191, 113, 0.25);
+}
+
+/* --- Velká tabule ----------------------------------------------------- */
+
+.board {
+  margin: 12px 14px 0;
+  padding: 24px 18px;
+  text-align: center;
+  background: var(--board);
+  border: 1px solid var(--board-edge);
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.board-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--led-dim);
+}
+
+#big-unit {
+  font-size: 13px;
+  letter-spacing: 2.5px;
+}
+
+.big-number {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 92px;
+  font-weight: 600;
+  line-height: 1.05;
+  padding: 6px 0;
+  color: var(--led);
+  text-shadow: 0 0 14px rgba(255, 179, 0, 0.35);
+  font-variant-numeric: tabular-nums;
+}
+
+.big-number.arriving { font-size: 68px; }
+
+.big-number.blink { animation: blink 1s ease-in-out infinite; }
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+
+.depart-line {
+  margin-top: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--led-mid);
+}
+
+.live-note {
+  margin-top: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--live);
+  line-height: 1.4;
+}
+
+/* --- Další odjezdy ---------------------------------------------------- */
+
+.next { padding: 18px 18px 0; }
+
+.next h2 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.row-left { display: flex; align-items: baseline; gap: 6px; }
+
+.row-time {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.row-delay {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--late);
+}
+
+.row-tomorrow { font-size: 11px; color: var(--muted); }
+
+.row-eta { font-size: 14px; color: var(--muted); }
+
+/* --- Patka ------------------------------------------------------------ */
+
+.footer {
+  flex: none;
+  padding: 12px 18px calc(16px + env(safe-area-inset-bottom));
+}
+
+.footer p {
+  margin: 0 0 4px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.footer-strong {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .big-number.blink { animation: none; }
+}

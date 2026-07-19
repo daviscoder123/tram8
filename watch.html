@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tram 8</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #101418; color: #ffb300; font-family: -apple-system, sans-serif; padding: 12px; }
+  .container { text-align: center; }
+  .number { font-size: 48px; font-weight: bold; margin: 20px 0; font-variant-numeric: tabular-nums; }
+  .unit { font-size: 14px; opacity: 0.7; margin-bottom: 16px; }
+  .info { font-size: 12px; opacity: 0.8; line-height: 1.4; margin-bottom: 12px; }
+  .status { font-size: 11px; opacity: 0.6; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="unit" id="unit">min</div>
+  <div class="number" id="number">–</div>
+  <div class="info" id="info"></div>
+  <div class="status" id="status">Načítám…</div>
+</div>
+
+<script type="module">
+  import { getApiData } from './api.js';
+
+  async function update() {
+    try {
+      const data = await getApiData();
+      const n = data.nextArrival;
+
+      document.getElementById('number').textContent = n.unit === 'přijíždí' ? '●' : n.minutes;
+      document.getElementById('unit').textContent = n.unit;
+      document.getElementById('info').textContent = n.expectedTime + (n.isTomorrow ? ' (zítra)' : '');
+
+      let status = data.feedState === 'live' ? '🔵 ŽIVĚ' : '⚫ Jízdní řád';
+      if (n.delayMinutes !== null && n.delayMinutes > 0) {
+        status += ` · +${n.delayMinutes} min`;
+      }
+      document.getElementById('status').textContent = status;
+    } catch (err) {
+      document.getElementById('status').textContent = 'Chyba dat';
+    }
+  }
+
+  update();
+  setInterval(update, 1000);
+</script>
+</body>
+</html>
