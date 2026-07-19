@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tram 8</title>
+<style>
+html, body { margin: 0; padding: 0; }
+body {
+  background: #101418;
+  color: #ffb300;
+  font-family: -apple-system, sans-serif;
+  padding: 12px 6px;
+  text-align: center;
+  line-height: 1.15;
+}
+.unit { font-size: 14px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.75; }
+
+/* Střední řádek: zpoždění | číslo | vzdálenost */
+.mid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 2px 0;
+}
+.side {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.25;
+  opacity: 0.9;
+}
+.side .v { font-size: 15px; font-weight: 700; display: block; font-variant-numeric: tabular-nums; }
+.side .l { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; opacity: 0.6; display: block; }
+.side.ok    { color: #2fbf71; }
+.side.late  { color: #ff6b5e; }
+.side.early { color: #6ec6ff; }
+
+.num { font-size: 68px; font-weight: 700; font-variant-numeric: tabular-nums; flex: none; }
+.num.blink { animation: blink 1s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: 0.25; } }
+
+.time { font-size: 14px; margin: 4px 0 2px; opacity: 0.9; }
+.next { font-size: 12px; margin: 2px 0; opacity: 0.65; }
+.status { font-size: 11px; margin-top: 8px; }
+.status.live { color: #2fbf71; }
+.status.off { color: #8b939c; }
+</style>
+</head>
+<body>
+<div class="unit" id="unit">min</div>
+
+<div class="mid">
+  <div class="side" id="left"></div>
+  <div class="num" id="num">–</div>
+  <div class="side" id="right"></div>
+</div>
+
+<div class="time" id="time"></div>
+<div class="next" id="next"></div>
+<div class="status off" id="status">Načítám…</div>
+
+<script type="module">
+// Stejný živý kód jako mobilní verze — jen minimální displej pro hodinky.
+import { LiveFeed } from './js/livefeed.js';
+import { LIVE_REFRESH_MS, DEPARTURE_COUNT } from './js/config.js';
+import { nextScheduled, clockText, isOtherDay } from './js/timetable.js';
+
+const feed = new LiveFeed();
+let trams = [];
+let live = false;
+let fetchedAt = null;
+
+async function refreshLive() {
+  const result = await feed.fetchApproachingTrams();
+  if (result.ok) { trams = result.trams; live = true; fetchedAt = new Date(); }
+  else { trams = []; live = false; }
+  render();
+}
+
+function departures(now) {
+  const scheduled = nextScheduled(DEPARTURE_COUNT, now);
+  let result = scheduled.map((d) => ({ scheduled: d, expected: d, delay: null, dist: null }));
+  if (live) {
+    for (let i = 0; i < result.length && i < trams.length; i++) {
+      const t = trams[i];
+      const base = new Date(result[i].scheduled.getTime() + t.delayMinutes * 60000);
+      const floor = new Date(now.getTime() + (t.distanceMeters < 60 ? 5 : 30) * 1000);
+      result[i] = {
+        scheduled: result[i].scheduled,
+        expected: base > floor ? base : floor,
+        delay: t.delayMinutes,
+        dist: t.distanceMeters,
+      };
+    }
+    result.sort((a, b) => a.expected - b.expected);
+  }
+  return result;
+}
+
+function distText(m) {
+  return m >= 1000 ? (m / 1000).toFixed(1) + ' km' : m + ' m';
+}
+
+function render() {
+  const now = new Date();
+  const deps = departures(now);
+  const first = deps[0];
+  const el = (id) => document.getElementById(id);
+
+  if (!first) { el('num').textContent = '–'; return; }
+
+  const sec = Math.max(0, Math.floor((first.expected - now) / 1000));
+  const min = Math.floor(sec / 60);
+  const arriving = sec < 60;
+
+  el('num').textContent = arriving ? '●' : String(min);
+  el('num').classList.toggle('blink', arriving);
+  el('unit').textContent = arriving ? 'přijíždí' : 'min';
+
+  // Boky: vlevo zpoždění, vpravo vzdálenost — jen když je vůz živě na trati.
+  const left = el('left');
+  const right = el('right');
+  if (first.delay !== null && first.dist !== null) {
+    let v, l, cls;
+    if (first.delay > 0)      { v = '+' + first.delay; l = 'zpoždění'; cls = 'side late'; }
+    else if (first.delay < 0) { v = '−' + (-first.delay); l = 'náskok'; cls = 'side early'; }
+    else                      { v = '✓'; l = 'včas'; cls = 'side ok'; }
+    left.innerHTML = '<span class="v">' + v + '</span><span class="l">' + l + '</span>';
+    left.className = cls;
+    right.innerHTML = '<span class="v">' + distText(first.dist) + '</span><span class="l">od zast.</span>';
+    right.className = 'side';
+  } else {
+    left.innerHTML = '';
+    right.innerHTML = '';
+  }
+
+  el('time').textContent = 'odjezd ' + clockText(first.expected)
+    + (isOtherDay(first.expected, now) ? ' (zítra)' : '');
+
+  el('next').textContent = deps[1] ? 'další ' + clockText(deps[1].expected) : '';
+
+  const s = el('status');
+  if (live) { s.textContent = '● ŽIVĚ · ' + clockText(fetchedAt); s.className = 'status live'; }
+  else { s.textContent = '○ jízdní řád'; s.className = 'status off'; }
+}
+
+render();
+setInterval(render, 1000);
+refreshLive();
+setInterval(refreshLive, LIVE_REFRESH_MS);
+document.body.addEventListener('click', refreshLive);
+</script>
+</body>
+</html>
