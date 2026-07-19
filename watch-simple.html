@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tram 8</title>
+<style>
+html, body { margin: 0; padding: 0; }
+body { 
+  background: #101418; 
+  color: #ffb300; 
+  font-family: -apple-system, sans-serif; 
+  padding: 16px 8px;
+  text-align: center;
+  line-height: 1.1;
+}
+.num { font-size: 80px; font-weight: bold; margin: 8px 0; font-variant-numeric: tabular-nums; }
+.unit { font-size: 16px; margin: 4px 0; }
+.time { font-size: 14px; margin: 8px 0; opacity: 0.9; }
+.status { font-size: 12px; margin: 4px 0; opacity: 0.8; }
+</style>
+</head>
+<body>
+<div class="unit" id="unit">min</div>
+<div class="num" id="num">–</div>
+<div class="time" id="time"></div>
+<div class="status" id="status">Načítám…</div>
+
+<script type="module">
+import { getApiData } from './api.js';
+
+async function update() {
+  try {
+    const data = await getApiData();
+    const n = data.nextArrival;
+    
+    document.getElementById('num').textContent = n.unit === 'přijíždí' ? '●' : n.minutes;
+    document.getElementById('unit').textContent = n.unit;
+    document.getElementById('time').textContent = n.expectedTime + (n.isTomorrow ? ' (zítra)' : '');
+    
+    let st = n.delayMinutes !== null && n.delayMinutes > 0 ? `+${n.delayMinutes}` : '';
+    document.getElementById('status').textContent = (data.feedState === 'live' ? '🔴 ' : '⚫ ') + st;
+  } catch (err) {
+    document.getElementById('status').textContent = 'Chyba';
+  }
+}
+
+update();
+setInterval(update, 5000);
+</script>
+</body>
+</html>
